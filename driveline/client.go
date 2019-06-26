@@ -28,7 +28,6 @@ import (
 	ws "github.com/1533-systems/golang-sdk/driveline/websocket"
 )
 
-
 type consumer interface {
 	consumerID() uint64
 	run(ctx context.Context) error
@@ -170,7 +169,7 @@ func (c *Client) sendMessage(message []byte) error {
 	return nil
 }
 
-func (c *Client) onMessage(ws ws.WebSocket, buf []byte) {
+func (c *Client) onMessage(buf []byte) {
 	msg, err := decodeServerMessage(buf)
 	if err != nil {
 		c.errorHandler(fmt.Errorf("cannot decode server message: %s", err.Error()))
@@ -190,7 +189,7 @@ func (c *Client) onMessage(ws ws.WebSocket, buf []byte) {
 	consumer.onRecords(msg.records)
 }
 
-func (c *Client) onConnect(ws.WebSocket) {
+func (c *Client) onConnect() {
 	for id, stream := range c.defines.aliasMap {
 		if err := c.define(stream, id); err != nil {
 			c.errorHandler(fmt.Errorf("cannot set alias %d for stream %s", id, stream))
@@ -201,13 +200,13 @@ func (c *Client) onConnect(ws.WebSocket) {
 	}
 }
 
-func (c *Client) onDisconnect(ws.WebSocket) {
+func (c *Client) onDisconnect() {
 	for _, consumer := range c.snapshotConsumers() {
 		consumer.onDisconnect()
 	}
 }
 
-func (c *Client) onFailure(ws ws.WebSocket, err error) {
+func (c *Client) onFailure(err error) {
 	for _, consumer := range c.snapshotConsumers() {
 		consumer.onFailure(err)
 	}

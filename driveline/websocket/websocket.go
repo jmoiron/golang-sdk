@@ -64,11 +64,6 @@ type WebSocket interface {
 	io.WriteCloser
 }
 
-type MessageHandler func(WebSocket, []byte)
-type ConnectHandler func(WebSocket)
-type DisconnectHandler func(WebSocket)
-type FailureHandler func(WebSocket, error)
-
 var _ WebSocket = (*webSocket)(nil)
 
 type webSocket struct {
@@ -146,7 +141,7 @@ func (ws *webSocket) wsLoop(ctx context.Context, startResult chan<- error) {
 	for attempt := 0; attempt < ws.maxReconnect || ws.maxReconnect == -1; attempt += 1 {
 		select {
 		case <-ctx.Done():
-			ws.failureHandler(ws, ErrConnClosed)
+			ws.failureHandler(ErrConnClosed)
 			return
 		case <-time.After(ws.timeWaitForAttempt(attempt)):
 			break
@@ -160,7 +155,7 @@ func (ws *webSocket) wsLoop(ctx context.Context, startResult chan<- error) {
 		}
 		attempt = 0
 
-		ws.connectHandler(ws)
+		ws.connectHandler()
 		runnerCtx, cancelRunner := context.WithCancel(ctx)
 
 		var wg sync.WaitGroup
@@ -193,7 +188,7 @@ func (ws *webSocket) wsLoop(ctx context.Context, startResult chan<- error) {
 		if errReader != nil && errReader != errInterrupted {
 			ws.errorHandler(errReader)
 		}
-		ws.disconnectHandler(ws)
+		ws.disconnectHandler()
 		if len(ws.endpoint) == 0 {
 			return
 		}
@@ -202,7 +197,7 @@ func (ws *webSocket) wsLoop(ctx context.Context, startResult chan<- error) {
 		startResult <- ErrMaxReconnect
 		startResult = nil
 	}
-	ws.failureHandler(ws, ErrMaxReconnect)
+	ws.failureHandler(ErrMaxReconnect)
 }
 
 func (ws *webSocket) timeWaitForAttempt(attempt int) time.Duration {
@@ -227,7 +222,7 @@ func (ws *webSocket) runReaderLoop(stopCh <-chan struct{}) error {
 		}
 		switch opCode {
 		case binaryFrame:
-			ws.messageHandler(ws, frame)
+			ws.messageHandler(frame)
 		case closeFrame:
 			// TODO: must send a Close frame
 		case pingFrame:

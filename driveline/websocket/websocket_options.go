@@ -32,10 +32,10 @@ type webSocketOptions struct {
 	reconnectWait     time.Duration
 	maxReconnectWait  time.Duration
 	maxInFlight       int
-	connectHandler    ConnectHandler
-	disconnectHandler DisconnectHandler
-	messageHandler    MessageHandler
-	failureHandler    FailureHandler
+	connectHandler    func()
+	disconnectHandler func()
+	messageHandler    func([]byte)
+	failureHandler    func(error)
 	errorHandler      func(error)
 	connectTimeout    time.Duration
 	httpHeaders       http.Header
@@ -48,10 +48,10 @@ func (o *webSocketOptions) configure(options []Option) {
 	o.reconnectWait = defaultReconnectWait
 	o.maxReconnectWait = defaultMaxReconnectWait
 	o.maxInFlight = defaultMaxInFlight
-	o.connectHandler = func(WebSocket) {}
-	o.disconnectHandler = func(WebSocket) {}
-	o.messageHandler = func(WebSocket, []byte) {}
-	o.failureHandler = func(WebSocket, error) {}
+	o.connectHandler = func() {}
+	o.disconnectHandler = func() {}
+	o.messageHandler = func([]byte) {}
+	o.failureHandler = func(error) {}
 	o.errorHandler = func(error) {}
 	o.configureHTTP()
 	for _, configure := range options {
@@ -87,25 +87,25 @@ func MaxReconnectWait(d time.Duration) Option {
 
 }
 
-func OnMessage(handler func(WebSocket, []byte)) Option {
+func OnMessage(handler func([]byte)) Option {
 	return func(ws *webSocketOptions) {
 		ws.messageHandler = handler
 	}
 }
 
-func OnConnect(handler func(WebSocket)) Option {
+func OnConnect(handler func()) Option {
 	return func(ws *webSocketOptions) {
 		ws.connectHandler = handler
 	}
 }
 
-func OnDisconnect(handler func(WebSocket)) Option {
+func OnDisconnect(handler func()) Option {
 	return func(ws *webSocketOptions) {
 		ws.disconnectHandler = handler
 	}
 }
 
-func OnFailure(handler func(WebSocket, error)) Option {
+func OnFailure(handler func(error)) Option {
 	return func(ws *webSocketOptions) {
 		ws.failureHandler = handler
 	}

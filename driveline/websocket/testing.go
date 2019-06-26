@@ -46,23 +46,23 @@ func (ws *FakeWebSocket) Write(buf []byte) (int, error) {
 }
 
 func (ws *FakeWebSocket) Receive(data []byte) {
-	ws.opts.messageHandler(ws, data)
+	ws.opts.messageHandler(data)
 }
 
 func (ws *FakeWebSocket) Disconnect() {
-	ws.opts.disconnectHandler(ws)
+	ws.opts.disconnectHandler()
 }
 
 func (ws *FakeWebSocket) Reconnect() {
-	ws.opts.connectHandler(ws)
+	ws.opts.connectHandler()
 }
 
 func (ws *FakeWebSocket) Fail(err error) {
-	ws.opts.failureHandler(ws, err)
+	ws.opts.failureHandler(err)
 }
 
 func (ws *FakeWebSocket) Close() error {
-	ws.opts.disconnectHandler(ws)
-	ws.opts.failureHandler(ws, ErrConnClosed)
+	ws.opts.disconnectHandler()
+	ws.opts.failureHandler(ErrConnClosed)
 	return nil
 }
