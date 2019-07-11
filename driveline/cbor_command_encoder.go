@@ -350,15 +350,15 @@ func encodeBytesWithType(buf []byte, off int, data []byte, cborType byte) int {
 		off += 2
 	case n < 0x10000:
 		b[0] = 25 | cborType
-		binary.BigEndian.PutUint16(buf[1:], uint16(n))
+		binary.BigEndian.PutUint16(b[1:], uint16(n))
 		off += 3
 	case n < 0x100000000:
 		b[0] = 26 | cborType
-		binary.BigEndian.PutUint32(buf[1:], uint32(n))
+		binary.BigEndian.PutUint32(b[1:], uint32(n))
 		off += 5
 	default:
 		b[0] = 27 | cborType
-		binary.BigEndian.PutUint64(buf[1:], uint64(n))
+		binary.BigEndian.PutUint64(b[1:], uint64(n))
 		off += 9
 	}
 	return off + copy(buf[off:], data)
