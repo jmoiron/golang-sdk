@@ -48,7 +48,7 @@ const (
 	defaultReconnectWait    = 1 * time.Second
 	defaultMaxReconnectWait = defaultReconnectWait * maxReconnectWaitRatio
 
-	maxOutputBuffer = 2 * 1024 * 1024 * 1024
+	maxOutputBuffer = 32 * 1024 * 1024
 	readBufferSize  = 1024*1024 + 65536 + 1024
 	maxInputBuffer  = 16 * 1024 * 1024
 
